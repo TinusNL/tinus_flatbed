@@ -165,6 +165,10 @@ Citizen.CreateThread(function()
             LastVehicle = nil
             LastStatus = false
             LastAttach = false
+        else
+            if IsVehicleExtraTurnedOn(LastVehicle, 1) then
+                SetVehicleExtra(LastVehicle, 1, true)
+            end
         end
 
         local PlayerVehicle = GetVehiclePedIsIn(PlayerPedId(), false)
