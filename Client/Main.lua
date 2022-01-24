@@ -132,6 +132,7 @@ AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
                 if DoesEntityExist(ClosestVehicle) and ClosestVehicle ~= LastVehicle then
                     local VehicleCoords = GetEntityCoords(ClosestVehicle)
 
+                    DisableCamCollisionForEntity(ClosestVehicle)
                     AttachEntityToEntity(ClosestVehicle, PropID, nil, GetOffsetFromEntityGivenWorldCoords(PropID, VehicleCoords), vector3(0.0, 0.0, 0.0), true, false, true, false, nil, true)
 
                     TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Attached", NetworkGetNetworkIdFromEntity(ClosestVehicle))
