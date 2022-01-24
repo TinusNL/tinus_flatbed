@@ -30,5 +30,10 @@ server_scripts {
 files {
     -- Props
     'stream/def_flatbed3_props.ytyp',
+    -- Meta
+    'Meta/*.meta'
 }
+data_file 'VEHICLE_METADATA_FILE' 'Meta/vehicles.meta'
+data_file 'VEHICLE_VARIATION_FILE' 'Meta/carvariations.meta'
+
 data_file 'DLC_ITYP_REQUEST' 'stream/def_flatbed3_props.ytyp'
