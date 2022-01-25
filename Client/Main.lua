@@ -35,6 +35,17 @@ AddEventHandler('ti_flatbed:getProp', function(BedInfo)
         AttachEntityToEntity(NewBed, LastVehicle, nil, VehicleInfo.Default.Pos, VehicleInfo.Default.Rot, true, false, true, false, nil, true)
 
         TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Prop", NetworkGetNetworkIdFromEntity(NewBed))
+
+        LastStatus = false
+        LastAttach = false
+    else
+        LastStatus = BedInfo.Status
+
+        if BedInfo.Attached then
+            LastAttach = true
+        else
+            LastAttach = false
+        end
     end
 end)
 
@@ -42,7 +53,7 @@ RegisterNetEvent('ti_flatbed:action')
 AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
     if BedInfo and DoesEntityExist(NetworkGetEntityFromNetworkId(BedInfo.Prop)) then
         local VehicleInfo = GetVehicleInfo(GetEntityModel(LastVehicle))
-	    local PropID = NetworkGetEntityFromNetworkId(BedInfo.Prop)
+	local PropID = NetworkGetEntityFromNetworkId(BedInfo.Prop)
 
         if Action == "lower" then
             if not BedInfo.Status then
