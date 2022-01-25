@@ -53,7 +53,7 @@ RegisterNetEvent('ti_flatbed:action')
 AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
     if BedInfo and DoesEntityExist(NetworkGetEntityFromNetworkId(BedInfo.Prop)) then
         local VehicleInfo = GetVehicleInfo(GetEntityModel(LastVehicle))
-	local PropID = NetworkGetEntityFromNetworkId(BedInfo.Prop)
+        local PropID = NetworkGetEntityFromNetworkId(BedInfo.Prop)
 
         if Action == "lower" then
             if not BedInfo.Status then
@@ -177,10 +177,6 @@ Citizen.CreateThread(function()
             LastVehicle = nil
             LastStatus = false
             LastAttach = false
-        else
-            if IsVehicleExtraTurnedOn(LastVehicle, 1) then
-                SetVehicleExtra(LastVehicle, 1, true)
-            end
         end
 
         local PlayerVehicle = GetVehiclePedIsIn(PlayerPedId(), false)
@@ -203,6 +199,18 @@ Citizen.CreateThread(function()
                 local PlayerCoords = GetEntityCoords(PlayerPedId())
                 local VehicleInfo = GetVehicleInfo(GetEntityModel(LastVehicle))
                 local MarkerCoords = GetOffsetFromEntityInWorldCoords(LastVehicle, VehicleInfo.Marker)
+
+                for ExtraId, ExtraValue in pairs(VehicleInfo.Extras) do
+                    if ExtraValue then
+                        if not IsVehicleExtraTurnedOn(LastVehicle, ExtraId) then
+                            SetVehicleExtra(LastVehicle, ExtraId, false)
+                        end
+                    else
+                        if IsVehicleExtraTurnedOn(LastVehicle, ExtraId) then
+                            SetVehicleExtra(LastVehicle, ExtraId, true)
+                        end
+                    end
+                end
 
                 if Vdist2(PlayerCoords, MarkerCoords) <= 50.0 and not Busy then
                     DrawMarker(

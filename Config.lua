@@ -18,6 +18,9 @@ Config.Keys = { -- https://docs.fivem.net/docs/game-references/controls/
 Config.Flatbeds = {
     {
         Hash = "flatbed3", -- String | Hash Of The Vehicle
+        Extras = {
+            [1] = false -- Integer | Enable/Disable Extra's When Used
+        },
         Marker = vector3(-1.85, 0.4, -1.2), -- X, Y, Z | Marker Location
         Attach = vector2(0.0, 1.0), -- X, Y | Attach/Weld Location
         Radius = 3.0, -- Integer | ClosestVehicle Radius
