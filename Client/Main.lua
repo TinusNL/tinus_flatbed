@@ -26,6 +26,52 @@ function Notify(Text)
 	DrawNotification(0,1)
 end
 
+function GetVehicles()
+    local AllVehicles = {}
+    local CurrentHandle, CurrentVehicle = FindFirstVehicle()
+    local IsNext = true
+
+    repeat
+        table.insert(AllVehicles, CurrentVehicle)
+        IsNext, CurrentVehicle = FindNextVehicle()
+    until not IsNext
+
+    EndFindVehicle(CurrentHandle)
+
+    return AllVehicles
+end
+
+function IsAllowed(Vehicle)
+    local VehicleClass = GetVehicleClass(Vehicle)
+
+    for Index, CurrentClass in pairs(Config.Blacklist) do
+        if VehicleClass == CurrentClass then
+            return false
+        end
+    end
+
+    return true
+end
+
+function GetNearestVehicle(CheckCoords, CheckRadius)
+    local ClosestVehicle = nil
+    local ClosestDistance = math.huge
+
+    for Index, CurrentVehicle in pairs(GetVehicles()) do
+        if DoesEntityExist(CurrentVehicle) and IsAllowed(CurrentVehicle) then
+            local CurrentCoords = GetEntityCoords(CurrentVehicle)
+            local CurrentDistance = Vdist2(CheckCoords, CurrentCoords, false)
+
+            if CurrentDistance < CheckRadius and CurrentDistance < ClosestDistance then
+                ClosestVehicle = CurrentVehicle
+                ClosestDistance = CurrentDistance
+            end
+        end
+    end
+
+    return ClosestVehicle
+end
+
 RegisterNetEvent('ti_flatbed:getProp')
 AddEventHandler('ti_flatbed:getProp', function(BedInfo)
     if not BedInfo or not DoesEntityExist(NetworkGetEntityFromNetworkId(BedInfo.Prop)) then
@@ -37,15 +83,10 @@ AddEventHandler('ti_flatbed:getProp', function(BedInfo)
         TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Prop", NetworkGetNetworkIdFromEntity(NewBed))
 
         LastStatus = false
-        LastAttach = false
+        LastAttach = nil
     else
         LastStatus = BedInfo.Status
-
-        if BedInfo.Attached then
-            LastAttach = true
-        else
-            LastAttach = false
-        end
+        LastAttach = NetworkGetEntityFromNetworkId(BedInfo.Attached)
     end
 end)
 
@@ -138,19 +179,18 @@ AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
         elseif Action == "attach" then
             if not BedInfo.Attached then
                 local AttachCoords = GetOffsetFromEntityInWorldCoords(PropID, vector3(VehicleInfo.Attach.x, VehicleInfo.Attach.y, 0.0))
-                local ClosestVehicle = GetClosestVehicle(AttachCoords, VehicleInfo.Radius + 1.0, 0, 70)
+                local ClosestVehicle = GetNearestVehicle(AttachCoords, VehicleInfo.Radius)
 
                 if DoesEntityExist(ClosestVehicle) and ClosestVehicle ~= LastVehicle then
                     local VehicleCoords = GetEntityCoords(ClosestVehicle)
 
-                    DisableCamCollisionForEntity(ClosestVehicle)
                     AttachEntityToEntity(ClosestVehicle, PropID, nil, GetOffsetFromEntityGivenWorldCoords(PropID, VehicleCoords), vector3(0.0, 0.0, 0.0), true, false, true, false, nil, true)
 
                     TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Attached", NetworkGetNetworkIdFromEntity(ClosestVehicle))
                 end
             end
 
-            LastAttach = true
+            LastAttach = NetworkGetEntityFromNetworkId(BedInfo.Attached)
         elseif Action == "detach" then
             if BedInfo.Attached then
                 local AttachedVehicle = NetworkGetEntityFromNetworkId(BedInfo.Attached)
@@ -160,7 +200,7 @@ AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
                 TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Attached", nil)
             end
 
-            LastAttach = false
+            LastAttach = nil
         end
     else
         TriggerServerEvent("ti_flatbed:getProp", NetworkGetNetworkIdFromEntity(LastVehicle))
@@ -176,7 +216,7 @@ Citizen.CreateThread(function()
         if not DoesEntityExist(LastVehicle) or NetworkGetEntityOwner(LastVehicle) ~= PlayerId() then
             LastVehicle = nil
             LastStatus = false
-            LastAttach = false
+            LastAttach = nil
         end
 
         local PlayerVehicle = GetVehiclePedIsIn(PlayerPedId(), false)
@@ -192,6 +232,10 @@ Citizen.CreateThread(function()
                         TriggerServerEvent("ti_flatbed:getProp", NetworkGetNetworkIdFromEntity(PlayerVehicle))
                         break
                     end
+                end
+            else
+                if LastAttach and DoesEntityExist(LastAttach) then
+                    DisableCamCollisionForEntity(LastAttach)
                 end
             end
         else
@@ -240,7 +284,7 @@ Citizen.CreateThread(function()
                                 HelpMsg = HelpMsg.."\n"..Config.Translation.DETACH
                             else
                                 local BedCoords = GetOffsetFromEntityInWorldCoords(LastVehicle, VehicleInfo.Active.Pos)
-                                local ClosestVehicle = GetClosestVehicle(BedCoords - vector3(0.0, 1.0, 0.0), VehicleInfo.Radius, 0, 70)
+                                local ClosestVehicle = GetNearestVehicle(BedCoords - vector3(0.0, 1.0, 0.0), VehicleInfo.Radius)
                                 
                                 if DoesEntityExist(ClosestVehicle) and ClosestVehicle ~= LastVehicle then
                                     HelpMsg = HelpMsg.."\n"..Config.Translation.ATTACH
