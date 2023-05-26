@@ -188,9 +188,11 @@ AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
 
                     TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Attached", NetworkGetNetworkIdFromEntity(ClosestVehicle))
                 end
+                
+                LastAttach = ClosestVehicle
+            else
+                LastAttach = NetworkGetEntityFromNetworkId(BedInfo.Attached)
             end
-
-            LastAttach = NetworkGetEntityFromNetworkId(BedInfo.Attached)
         elseif Action == "detach" then
             if BedInfo.Attached then
                 local AttachedVehicle = NetworkGetEntityFromNetworkId(BedInfo.Attached)
