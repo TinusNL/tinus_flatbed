@@ -198,6 +198,7 @@ AddEventHandler('ti_flatbed:action', function(BedInfo, Action)
                 local AttachedVehicle = NetworkGetEntityFromNetworkId(BedInfo.Attached)
 
                 DetachEntity(AttachedVehicle, true, true)
+                SetVehicleOnGroundProperly(AttachedVehicle)
 
                 TriggerServerEvent("ti_flatbed:editProp", NetworkGetNetworkIdFromEntity(LastVehicle), "Attached", nil)
             end
